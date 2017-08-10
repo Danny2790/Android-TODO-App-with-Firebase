@@ -22,15 +22,12 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         mAuth = FirebaseAuth.getInstance();
-        Log.d(TAG, "onCreate: mauth " + mAuth);
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        Log.d(TAG, "onStart: called ");
         FirebaseUser currentUser = mAuth.getCurrentUser();
-        Log.d(TAG, "onCreate: current user" + currentUser.toString());
         signInAnonymously();
     }
 
@@ -43,6 +40,7 @@ public class MainActivity extends AppCompatActivity {
                             // Sign in success, update UI with the signed-in user's information
                             FirebaseUser user = mAuth.getCurrentUser();
                             Log.d(TAG, "signInAnonymously:success" + user.getDisplayName());
+                            updateTodoList(user);
                         } else {
                             Log.w(TAG, "signInAnonymously:failure", task.getException());
                             Toast.makeText(MainActivity.this, "Authentication failed.",
@@ -50,5 +48,9 @@ public class MainActivity extends AppCompatActivity {
                         }
                     }
                 });
+    }
+
+    public void updateTodoList(FirebaseUser user){
+
     }
 }
