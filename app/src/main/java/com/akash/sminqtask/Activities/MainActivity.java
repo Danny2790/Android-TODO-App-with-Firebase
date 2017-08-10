@@ -9,6 +9,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
+import com.akash.sminqtask.Constants.Constant;
 import com.akash.sminqtask.R;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -26,12 +27,12 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         mAuth = FirebaseAuth.getInstance();
-        fabButton = (FloatingActionButton)findViewById(R.id.fab);
+        fabButton = (FloatingActionButton) findViewById(R.id.fab);
         fabButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(MainActivity.this, TodoActivity.class);
-                startActivity(intent);
+                startActivityForResult(intent, Constant.REQUEST_ADD_TODO);
             }
         });
     }
@@ -62,11 +63,23 @@ public class MainActivity extends AppCompatActivity {
                 });
     }
 
-    public void updateTodoList(FirebaseUser user){
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == RESULT_OK && data != null) {
+            if (requestCode == Constant.REQUEST_ADD_TODO) {
+                String todoName = data.getStringExtra(Constant.TODO_KEY);
+                Log.d(TAG, "onActivityResult: " + todoName);
+            }
+        }
 
     }
 
-    public void pushToTodoList(){
+    public void retriveTodoList(FirebaseUser user) {
+
+    }
+
+    public void updateTodoList(FirebaseUser user) {
 
     }
 }
