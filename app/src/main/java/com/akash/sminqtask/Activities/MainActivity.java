@@ -1,9 +1,12 @@
 package com.akash.sminqtask.Activities;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.View;
 import android.widget.Toast;
 
 import com.akash.sminqtask.R;
@@ -16,12 +19,21 @@ import com.google.firebase.auth.FirebaseUser;
 public class MainActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
     private String TAG = MainActivity.class.getSimpleName();
+    private FloatingActionButton fabButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         mAuth = FirebaseAuth.getInstance();
+        fabButton = (FloatingActionButton)findViewById(R.id.fab);
+        fabButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, TodoActivity.class);
+                startActivity(intent);
+            }
+        });
     }
 
     @Override
@@ -51,6 +63,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void updateTodoList(FirebaseUser user){
+
+    }
+
+    public void pushToTodoList(){
 
     }
 }
