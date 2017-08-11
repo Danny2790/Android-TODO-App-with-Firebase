@@ -28,7 +28,6 @@ public class MainActivity extends AppCompatActivity {
     private DatabaseReference mFirebaseDatabaseReference;
     private FirebaseDatabase mFirebaseDatabase;
     private String TAG = MainActivity.class.getSimpleName();
-    private FloatingActionButton fabButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,7 +36,7 @@ public class MainActivity extends AppCompatActivity {
         mAuth = FirebaseAuth.getInstance();
         mFirebaseDatabase = FirebaseDatabase.getInstance();
 
-        fabButton = (FloatingActionButton) findViewById(R.id.fab);
+        FloatingActionButton fabButton = (FloatingActionButton) findViewById(R.id.fab);
         fabButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -47,7 +46,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    public void setupFirebaseDB(FirebaseUser user) {
+    public void setupFirebaseDB() {
         mFirebaseDatabaseReference = mFirebaseDatabase.getReference("todolist");
         Log.d(TAG, "onCreate: db root " + mFirebaseDatabaseReference.toString());
         setupFirebaseEventListener();
@@ -88,7 +87,7 @@ public class MainActivity extends AppCompatActivity {
         String todoName;
         for (DataSnapshot singleShot : dataSnapshot.getChildren()) {
             todoName = singleShot.getValue(String.class);
-            Log.d(TAG, "todo Item: " + todoName.toString());
+            Log.d(TAG, "todo Item: " + todoName);
         }
     }
 
@@ -105,9 +104,8 @@ public class MainActivity extends AppCompatActivity {
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
                             // Sign in success, update UI with the signed-in user's information
-                            FirebaseUser user = mAuth.getCurrentUser();
-                            setupFirebaseDB(user);
-                            Log.d(TAG, "signInAnonymously:success" + user.getDisplayName());
+                            setupFirebaseDB();
+                            Log.d(TAG, "signInAnonymously:success");
                         } else {
                             Log.w(TAG, "signInAnonymously:failure", task.getException());
                             Toast.makeText(MainActivity.this, "Authentication failed.",
