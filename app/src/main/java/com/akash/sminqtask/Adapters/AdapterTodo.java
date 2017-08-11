@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.akash.sminqtask.Models.Todo;
 import com.akash.sminqtask.R;
 
 import java.util.ArrayList;
@@ -17,9 +18,9 @@ import java.util.ArrayList;
 
 public class AdapterTodo extends RecyclerView.Adapter<AdapterTodo.TodoViewHolder> {
     private Context context;
-    private ArrayList<String> todoList;
+    private ArrayList<Todo> todoList;
 
-    public AdapterTodo(Context context, ArrayList<String> todolist) {
+    public AdapterTodo(Context context, ArrayList<Todo> todolist) {
         this.context = context;
         this.todoList = todolist;
     }
@@ -32,8 +33,8 @@ public class AdapterTodo extends RecyclerView.Adapter<AdapterTodo.TodoViewHolder
 
     @Override
     public void onBindViewHolder(TodoViewHolder holder, int position) {
-        String todoName = todoList.get(position);
-        holder.textViewTodoName.setText(todoName);
+        Todo todo = todoList.get(position);
+        holder.textViewTodoName.setText(todo.getTask());
     }
 
     @Override

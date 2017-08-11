@@ -10,15 +10,23 @@ import android.view.View;
 import android.widget.Toast;
 
 import com.akash.sminqtask.Constants.Constant;
+import com.akash.sminqtask.Models.Todo;
 import com.akash.sminqtask.R;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 public class MainActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
+    private DatabaseReference mFirebaseDatabaseReference;
+    private FirebaseDatabase mFirebaseDatabase;
     private String TAG = MainActivity.class.getSimpleName();
     private FloatingActionButton fabButton;
 
@@ -27,6 +35,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         mAuth = FirebaseAuth.getInstance();
+        mFirebaseDatabase = FirebaseDatabase.getInstance();
+
         fabButton = (FloatingActionButton) findViewById(R.id.fab);
         fabButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -37,10 +47,54 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    public void setupFirebaseDB(FirebaseUser user) {
+        mFirebaseDatabaseReference = mFirebaseDatabase.getReference("todolist");
+        Log.d(TAG, "onCreate: db root " + mFirebaseDatabaseReference.toString());
+        setupFirebaseEventListener();
+    }
+
+    public void setupFirebaseEventListener() {
+        mFirebaseDatabaseReference.addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                Log.d(TAG, "onChildAdded: ");
+                getAllTodo(dataSnapshot);
+
+            }
+
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+                Log.d(TAG, "onChildChanged: ");
+            }
+
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+                Log.d(TAG, "onChildRemoved: ");
+            }
+
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+                Log.d(TAG, "onChildMoved: ");
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Log.d(TAG, "onCancelled: ");
+            }
+        });
+    }
+
+    private void getAllTodo(DataSnapshot dataSnapshot) {
+        String todoName;
+        for (DataSnapshot singleShot : dataSnapshot.getChildren()) {
+            todoName = singleShot.getValue(String.class);
+            Log.d(TAG, "todo Item: " + todoName.toString());
+        }
+    }
+
     @Override
     protected void onStart() {
         super.onStart();
-        FirebaseUser currentUser = mAuth.getCurrentUser();
         signInAnonymously();
     }
 
@@ -52,8 +106,8 @@ public class MainActivity extends AppCompatActivity {
                         if (task.isSuccessful()) {
                             // Sign in success, update UI with the signed-in user's information
                             FirebaseUser user = mAuth.getCurrentUser();
+                            setupFirebaseDB(user);
                             Log.d(TAG, "signInAnonymously:success" + user.getDisplayName());
-                            updateTodoList(user);
                         } else {
                             Log.w(TAG, "signInAnonymously:failure", task.getException());
                             Toast.makeText(MainActivity.this, "Authentication failed.",
@@ -70,6 +124,7 @@ public class MainActivity extends AppCompatActivity {
             if (requestCode == Constant.REQUEST_ADD_TODO) {
                 String todoName = data.getStringExtra(Constant.TODO_KEY);
                 Log.d(TAG, "onActivityResult: " + todoName);
+                updateTodoList(todoName);
             }
         }
 
@@ -79,7 +134,9 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    public void updateTodoList(FirebaseUser user) {
-
+    public void updateTodoList(String todoName) {
+        Todo todo = new Todo(todoName);
+        mFirebaseDatabaseReference.push().setValue(todo);
+        Log.d(TAG, "updateTodoList: pushed value" + todoName);
     }
 }
