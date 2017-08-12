@@ -5,10 +5,13 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
+import com.akash.sminqtask.Adapters.AdapterTodo;
 import com.akash.sminqtask.Constants.Constant;
 import com.akash.sminqtask.Models.Todo;
 import com.akash.sminqtask.R;
@@ -16,18 +19,24 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
+import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
     private DatabaseReference mFirebaseDatabaseReference;
     private FirebaseDatabase mFirebaseDatabase;
     private String TAG = MainActivity.class.getSimpleName();
+    private RecyclerView mRecyclerTodoList;
+    private AdapterTodo adapterTodo;
+    private ArrayList<Todo> todoArrayList = new ArrayList<>();
+    Boolean isFirstFetch = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,6 +44,15 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         mAuth = FirebaseAuth.getInstance();
         mFirebaseDatabase = FirebaseDatabase.getInstance();
+
+        // firebase enable disk persistance
+        mFirebaseDatabase.setPersistenceEnabled(true);
+
+        mRecyclerTodoList = (RecyclerView) findViewById(R.id.rv_todo);
+        mRecyclerTodoList.setLayoutManager(new LinearLayoutManager(this));
+        mRecyclerTodoList.setHasFixedSize(true);
+        adapterTodo = new AdapterTodo(this, todoArrayList);
+        mRecyclerTodoList.setAdapter(adapterTodo);
 
         FloatingActionButton fabButton = (FloatingActionButton) findViewById(R.id.fab);
         fabButton.setOnClickListener(new View.OnClickListener() {
@@ -47,17 +65,36 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void setupFirebaseDB() {
+        //get the reference of database topnode todolist
+        // All the child would go under todolist
         mFirebaseDatabaseReference = mFirebaseDatabase.getReference("todolist");
         Log.d(TAG, "onCreate: db root " + mFirebaseDatabaseReference.toString());
         setupFirebaseEventListener();
     }
 
     public void setupFirebaseEventListener() {
+        mFirebaseDatabaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                Log.d(TAG, "onDataChange: ");
+                isFirstFetch = false;
+                getAllTodo(dataSnapshot);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Log.d(TAG, "onDataChange: ");
+            }
+        });
+
         mFirebaseDatabaseReference.addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                 Log.d(TAG, "onChildAdded: ");
-                getAllTodo(dataSnapshot);
+                if (!isFirstFetch) {
+                    Log.d(TAG, "onChildAdded: string " + s);
+                    getUpdatedTodo(dataSnapshot, s);
+                }
 
             }
 
@@ -83,12 +120,25 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void getAllTodo(DataSnapshot dataSnapshot) {
-        String todoName;
+    private void getUpdatedTodo(DataSnapshot dataSnapshot, String s) {
+        Todo todo;
         for (DataSnapshot singleShot : dataSnapshot.getChildren()) {
-            todoName = singleShot.getValue(String.class);
-            Log.d(TAG, "todo Item: " + todoName);
+            Log.d(TAG, "getAllTodo: " + singleShot.toString() + " key : " + singleShot.getKey() + " value : " + singleShot.getValue());
+            todo = new Todo(singleShot.getValue(String.class));
+            todoArrayList.add(todo);
         }
+        adapterTodo.notifyDataSetChanged();
+    }
+
+    private void getAllTodo(DataSnapshot dataSnapshot) {
+        todoArrayList.clear();
+        Todo todo;
+        for (DataSnapshot singleShot : dataSnapshot.getChildren()) {
+            Log.d(TAG, "getAllTodo: " + singleShot.toString() + " key : " + singleShot.getKey() + " value : " + singleShot.getValue());
+            todo = singleShot.getValue(Todo.class);
+            todoArrayList.add(todo);
+        }
+        adapterTodo.notifyDataSetChanged();
     }
 
     @Override
@@ -122,17 +172,13 @@ public class MainActivity extends AppCompatActivity {
             if (requestCode == Constant.REQUEST_ADD_TODO) {
                 String todoName = data.getStringExtra(Constant.TODO_KEY);
                 Log.d(TAG, "onActivityResult: " + todoName);
-                updateTodoList(todoName);
+                addItemToTodoList(todoName);
             }
         }
 
     }
 
-    public void retriveTodoList(FirebaseUser user) {
-
-    }
-
-    public void updateTodoList(String todoName) {
+    public void addItemToTodoList(String todoName) {
         Todo todo = new Todo(todoName);
         mFirebaseDatabaseReference.push().setValue(todo);
         Log.d(TAG, "updateTodoList: pushed value" + todoName);
