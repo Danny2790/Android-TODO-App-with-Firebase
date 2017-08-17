@@ -1,6 +1,7 @@
 package com.akash.sminqtask.Activities;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
@@ -15,6 +16,7 @@ import com.akash.sminqtask.Adapters.AdapterTodo;
 import com.akash.sminqtask.Constants.Constant;
 import com.akash.sminqtask.Models.Todo;
 import com.akash.sminqtask.R;
+import com.akash.sminqtask.Utilities.Utils;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
@@ -43,10 +45,11 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         mAuth = FirebaseAuth.getInstance();
-        mFirebaseDatabase = FirebaseDatabase.getInstance();
+        if (mFirebaseDatabase == null) {
+            mFirebaseDatabase = Utils.getDatabase();
+            Log.d(TAG, "onCreate: " + mFirebaseDatabase);
+        }
 
-        // firebase enable disk persistance
-        mFirebaseDatabase.setPersistenceEnabled(true);
 
         mRecyclerTodoList = (RecyclerView) findViewById(R.id.rv_todo);
         mRecyclerTodoList.setLayoutManager(new LinearLayoutManager(this));
@@ -90,9 +93,9 @@ public class MainActivity extends AppCompatActivity {
         mFirebaseDatabaseReference.addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                Log.d(TAG, "onChildAdded: ");
+                // Log.d(TAG, "onChildAdded: ");
                 if (!isFirstFetch) {
-                    Log.d(TAG, "onChildAdded: string " + s);
+                    // Log.d(TAG, "onChildAdded: string " + s);
                     getUpdatedTodo(dataSnapshot, s);
                 }
 
@@ -123,7 +126,7 @@ public class MainActivity extends AppCompatActivity {
     private void getUpdatedTodo(DataSnapshot dataSnapshot, String s) {
         Todo todo;
         for (DataSnapshot singleShot : dataSnapshot.getChildren()) {
-            Log.d(TAG, "getAllTodo: " + singleShot.toString() + " key : " + singleShot.getKey() + " value : " + singleShot.getValue());
+            // Log.d(TAG, "getAllTodo: " + singleShot.toString() + " key : " + singleShot.getKey() + " value : " + singleShot.getValue());
             todo = new Todo(singleShot.getValue(String.class));
             todoArrayList.add(todo);
         }
@@ -134,7 +137,7 @@ public class MainActivity extends AppCompatActivity {
         todoArrayList.clear();
         Todo todo;
         for (DataSnapshot singleShot : dataSnapshot.getChildren()) {
-            Log.d(TAG, "getAllTodo: " + singleShot.toString() + " key : " + singleShot.getKey() + " value : " + singleShot.getValue());
+            // Log.d(TAG, "getAllTodo: " + singleShot.toString() + " key : " + singleShot.getKey() + " value : " + singleShot.getValue());
             todo = singleShot.getValue(Todo.class);
             todoArrayList.add(todo);
         }
@@ -144,6 +147,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
+        Log.d(TAG, "onStart: ");
         signInAnonymously();
     }
 
@@ -183,4 +187,5 @@ public class MainActivity extends AppCompatActivity {
         mFirebaseDatabaseReference.push().setValue(todo);
         Log.d(TAG, "updateTodoList: pushed value" + todoName);
     }
+
 }
