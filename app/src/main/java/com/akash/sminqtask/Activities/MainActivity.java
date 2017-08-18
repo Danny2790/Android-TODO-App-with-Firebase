@@ -50,7 +50,7 @@ public class MainActivity extends AppCompatActivity {
         mRecyclerTodoList = (RecyclerView) findViewById(R.id.rv_todo);
         mRecyclerTodoList.setLayoutManager(new LinearLayoutManager(this));
         mRecyclerTodoList.setHasFixedSize(true);
-        adapterTodo = new AdapterTodo(this, todoArrayList);
+        adapterTodo = new AdapterTodo(todoArrayList);
         mRecyclerTodoList.setAdapter(adapterTodo);
 
         FloatingActionButton fabButton = (FloatingActionButton) findViewById(R.id.fab);
@@ -102,6 +102,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onChildRemoved(DataSnapshot dataSnapshot) {
                 Log.d(TAG, "onChildRemoved: ");
+                removeFromTodo(dataSnapshot);
+
             }
 
             @Override
@@ -114,6 +116,21 @@ public class MainActivity extends AppCompatActivity {
                 Log.d(TAG, "onCancelled: ");
             }
         });
+    }
+
+    private void removeFromTodo(DataSnapshot dataSnapshot) {
+        for (DataSnapshot singleShot : dataSnapshot.getChildren()) {
+            Log.d(TAG, "getUpdatedTodo: " + singleShot.getValue());
+            String todoName = singleShot.getValue(String.class);
+            for (int i = 0; i < todoArrayList.size(); i++) {
+                if (todoArrayList.get(i).getTask().equals(todoName)) {
+                    todoArrayList.remove(i);
+                    adapterTodo.notifyItemRemoved(i);
+                    adapterTodo.notifyItemRangeChanged(i, todoArrayList.size());
+                    break;
+                }
+            }
+        }
     }
 
     private void getUpdatedTodo(DataSnapshot dataSnapshot, String s) {
