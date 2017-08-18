@@ -1,7 +1,6 @@
 package com.akash.sminqtask.Activities;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
@@ -47,10 +46,7 @@ public class MainActivity extends AppCompatActivity {
         mAuth = FirebaseAuth.getInstance();
         if (mFirebaseDatabase == null) {
             mFirebaseDatabase = Utils.getDatabase();
-            Log.d(TAG, "onCreate: " + mFirebaseDatabase);
         }
-
-
         mRecyclerTodoList = (RecyclerView) findViewById(R.id.rv_todo);
         mRecyclerTodoList.setLayoutManager(new LinearLayoutManager(this));
         mRecyclerTodoList.setHasFixedSize(true);
@@ -71,7 +67,6 @@ public class MainActivity extends AppCompatActivity {
         //get the reference of database topnode todolist
         // All the child would go under todolist
         mFirebaseDatabaseReference = mFirebaseDatabase.getReference("todolist");
-        Log.d(TAG, "onCreate: db root " + mFirebaseDatabaseReference.toString());
         setupFirebaseEventListener();
     }
 
@@ -93,9 +88,7 @@ public class MainActivity extends AppCompatActivity {
         mFirebaseDatabaseReference.addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                // Log.d(TAG, "onChildAdded: ");
                 if (!isFirstFetch) {
-                    // Log.d(TAG, "onChildAdded: string " + s);
                     getUpdatedTodo(dataSnapshot, s);
                 }
 
@@ -126,7 +119,6 @@ public class MainActivity extends AppCompatActivity {
     private void getUpdatedTodo(DataSnapshot dataSnapshot, String s) {
         Todo todo;
         for (DataSnapshot singleShot : dataSnapshot.getChildren()) {
-            // Log.d(TAG, "getAllTodo: " + singleShot.toString() + " key : " + singleShot.getKey() + " value : " + singleShot.getValue());
             todo = new Todo(singleShot.getValue(String.class));
             todoArrayList.add(todo);
         }
@@ -137,7 +129,6 @@ public class MainActivity extends AppCompatActivity {
         todoArrayList.clear();
         Todo todo;
         for (DataSnapshot singleShot : dataSnapshot.getChildren()) {
-            // Log.d(TAG, "getAllTodo: " + singleShot.toString() + " key : " + singleShot.getKey() + " value : " + singleShot.getValue());
             todo = singleShot.getValue(Todo.class);
             todoArrayList.add(todo);
         }
@@ -147,7 +138,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        Log.d(TAG, "onStart: ");
         signInAnonymously();
     }
 
@@ -175,7 +165,6 @@ public class MainActivity extends AppCompatActivity {
         if (resultCode == RESULT_OK && data != null) {
             if (requestCode == Constant.REQUEST_ADD_TODO) {
                 String todoName = data.getStringExtra(Constant.TODO_KEY);
-                Log.d(TAG, "onActivityResult: " + todoName);
                 addItemToTodoList(todoName);
             }
         }
@@ -185,7 +174,6 @@ public class MainActivity extends AppCompatActivity {
     public void addItemToTodoList(String todoName) {
         Todo todo = new Todo(todoName);
         mFirebaseDatabaseReference.push().setValue(todo);
-        Log.d(TAG, "updateTodoList: pushed value" + todoName);
     }
 
 }
