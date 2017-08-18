@@ -138,8 +138,9 @@ public class MainActivity extends AppCompatActivity {
         for (DataSnapshot singleShot : dataSnapshot.getChildren()) {
             todo = new Todo(singleShot.getValue(String.class));
             todoArrayList.add(todo);
+            adapterTodo.notifyItemInserted(todoArrayList.size() - 1);
         }
-        adapterTodo.notifyDataSetChanged();
+
     }
 
     private void getAllTodo(DataSnapshot dataSnapshot) {
