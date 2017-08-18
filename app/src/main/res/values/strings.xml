@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">SminqTask</string>
-    <string name="task_hint">Enter Task Name</string>
+    <string name="task_hint">Your Task </string>
+    <string name="task_lable">What do you want to do next?</string>
 </resources>
