@@ -1,5 +1,6 @@
 package com.akash.sminqtask.Activities;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -38,6 +39,7 @@ public class MainActivity extends AppCompatActivity {
     private AdapterTodo adapterTodo;
     private ArrayList<Todo> todoArrayList = new ArrayList<>();
     Boolean isFirstFetch = true;
+    private ProgressDialog progressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,6 +73,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void setupFirebaseEventListener() {
+        hideProgressDialog();
         mFirebaseDatabaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -160,6 +163,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void signInAnonymously() {
+        showProgressDialog();
         mAuth.signInAnonymously()
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
@@ -192,6 +196,16 @@ public class MainActivity extends AppCompatActivity {
     public void addItemToTodoList(String todoName) {
         Todo todo = new Todo(todoName);
         mFirebaseDatabaseReference.push().setValue(todo);
+    }
+
+    public void showProgressDialog(){
+        progressDialog = new ProgressDialog(this);
+        progressDialog.setMessage("loading");
+        progressDialog.show();
+    }
+
+    public void hideProgressDialog(){
+        progressDialog.hide();
     }
 
 }
